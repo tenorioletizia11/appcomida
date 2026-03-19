@@ -1,0 +1,10 @@
+{
+  "name": "appcomida",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AppComida: recomendaciones de comida con memoria de usuario e integración opcional con OpenAI.",
+  "scripts": {
+    "start": "python3 app.py",
+    "test": "python3 -m unittest discover -s tests"
+  }
+}
