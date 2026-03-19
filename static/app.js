@@ -18,6 +18,16 @@ const els = {
   aiSummary: document.querySelector("#ai-summary"),
   aiRecipeTip: document.querySelector("#ai-recipe-tip"),
   aiShoppingTip: document.querySelector("#ai-shopping-tip"),
+  heroTitle: document.querySelector("#hero-title"),
+  recipeHeroTitle: document.querySelector("#recipe-hero-title"),
+  recipeTitle: document.querySelector("#recipe-title"),
+  recipeSteps: document.querySelector("#recipe-steps"),
+  shoppingPreview: document.querySelector("#shopping-preview"),
+  screens: [...document.querySelectorAll(".screen")],
+  navItems: [...document.querySelectorAll(".nav-item")],
+  goProfile: document.querySelector("#go-profile"),
+  goRecipes: document.querySelector("#go-recipes"),
+  goToday: document.querySelector("#go-today"),
 };
 
 const parseCommaList = (value) =>
@@ -27,6 +37,7 @@ const parseCommaList = (value) =>
     .filter(Boolean);
 
 const currencyLevel = (level) => "€".repeat(Number(level));
+const modeLabel = (mode) => (mode === "cook" ? "Cocinar" : "Delivery");
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -35,11 +46,13 @@ async function api(path, options = {}) {
   });
 
   const payload = await response.json();
-  if (!response.ok) {
-    throw new Error(payload.error || "Error de servidor");
-  }
-
+  if (!response.ok) throw new Error(payload.error || "Error de servidor");
   return payload;
+}
+
+function setScreen(screen) {
+  els.screens.forEach((section) => section.classList.toggle("active", section.dataset.screen === screen));
+  els.navItems.forEach((item) => item.classList.toggle("active", item.dataset.target === screen));
 }
 
 function fillProfile(profile) {
@@ -52,12 +65,11 @@ function fillProfile(profile) {
   els.profileForm.disliked_ingredients.value = profile.disliked_ingredients.join(", ");
   els.profileForm.weeknight_minutes.value = profile.weeknight_minutes;
   els.profileForm.budget_level.value = String(profile.budget_level);
+  els.contextForm.time_available.value = profile.weeknight_minutes;
 
   for (const checkbox of els.profileForm.querySelectorAll('input[name="preferred_modes"]')) {
     checkbox.checked = profile.preferred_modes.includes(checkbox.value);
   }
-
-  els.contextForm.time_available.value = profile.weeknight_minutes;
 }
 
 function renderAI(ai) {
@@ -69,7 +81,6 @@ function renderAI(ai) {
 
 function renderHistory() {
   els.historyList.innerHTML = "";
-
   for (const item of state.history) {
     const li = document.createElement("li");
     const when = new Date(item.created_at).toLocaleString("es-ES", {
@@ -81,10 +92,29 @@ function renderHistory() {
   }
 }
 
-function selectRecommendation(name) {
+function renderRecipePreview(recommendation) {
+  els.recipeHeroTitle.textContent = recommendation
+    ? `Receta favorita para ${recommendation.name}`
+    : "Cocina sin fricción";
+  els.recipeTitle.textContent = recommendation ? recommendation.name : "Elige una receta";
+
+  els.shoppingPreview.innerHTML = recommendation?.shopping_list?.length
+    ? recommendation.shopping_list
+        .map((item) => `<li>${item.ingredient} — ${item.quantity} <strong>(${item.suggested_store})</strong></li>`)
+        .join("")
+    : `<li>No necesitas compra extra para esta opción.</li>`;
+
+  els.recipeSteps.innerHTML = recommendation?.steps?.length
+    ? recommendation.steps.map((step) => `<li>${step}</li>`).join("")
+    : `<li>Abre una app de delivery o conecta restaurantes reales en una siguiente iteración.</li>`;
+}
+
+function selectRecommendation(name, nextScreen = false) {
   const recommendation = state.recommendations.find((item) => item.name === name);
   if (!recommendation) return;
+
   state.selected = recommendation;
+  renderRecipePreview(recommendation);
 
   const ingredients = recommendation.shopping_list.length
     ? `<ul class="detail-list">${recommendation.shopping_list
@@ -96,22 +126,23 @@ function selectRecommendation(name) {
 
   const steps = recommendation.steps.length
     ? `<ol class="detail-list">${recommendation.steps.map((step) => `<li>${step}</li>`).join("")}</ol>`
-    : `<p class="muted">Abre la app de delivery o integra restaurantes reales en la siguiente iteración.</p>`;
+    : `<p class="muted">Esta opción es ideal para pedir sin cocinar.</p>`;
 
   const penalties = recommendation.penalties.length
     ? `<ul class="detail-list">${recommendation.penalties.map((item) => `<li>${item}</li>`).join("")}</ul>`
     : `<p class="muted">No detectamos fricciones importantes para esta opción.</p>`;
 
   els.detailPanel.innerHTML = `
-    <p class="eyebrow">Detalle</p>
-    <div class="section-heading">
+    <p class="eyebrow">Detalle elegido</p>
+    <div class="section-header start">
       <div>
+        <span class="badge ${recommendation.mode}">${modeLabel(recommendation.mode)}</span>
         <h2>${recommendation.name}</h2>
-        <p class="muted">${recommendation.description}</p>
       </div>
-      <span class="badge ${recommendation.mode}">${recommendation.mode === "cook" ? "Cocinar" : "Delivery"}</span>
+      <span class="score-pill">Score ${recommendation.score}</span>
     </div>
-    <p><strong>Cocina:</strong> ${recommendation.cuisine} · <strong>Tiempo:</strong> ${recommendation.cook_time} min · <strong>Presupuesto:</strong> ${currencyLevel(recommendation.price_level)}</p>
+    <p class="muted">${recommendation.description}</p>
+    <p class="muted"><strong>${recommendation.cuisine}</strong> · ${recommendation.cook_time} min · presupuesto ${currencyLevel(recommendation.price_level)}</p>
     <div>
       <h3>Por qué te lo recomendamos</h3>
       <ul class="detail-list">${recommendation.reasons.map((item) => `<li>${item}</li>`).join("")}</ul>
@@ -128,36 +159,36 @@ function selectRecommendation(name) {
       <h3>Paso a paso</h3>
       ${steps}
     </div>
-    <div class="detail-actions">
+    <div class="card-actions">
       <button class="js-record" data-action="liked" data-dish="${recommendation.name}">Me gusta</button>
-      <button class="secondary js-record" data-action="saved" data-dish="${recommendation.name}">Guardar</button>
-      <button class="ghost js-record" data-action="dismissed" data-dish="${recommendation.name}">No se me antoja</button>
+      <button class="secondary js-open-recipes" type="button">Ir a receta</button>
     </div>
-    <div class="notice">Tip AI: ${state.ai?.recipe_tip || "La app puede personalizar aún más esta receta si configuras tu clave de OpenAI."}</div>
   `;
 
-  for (const button of els.detailPanel.querySelectorAll(".js-record")) {
-    button.addEventListener("click", () => recordInteraction(button.dataset.dish, button.dataset.action));
-  }
+  els.detailPanel.querySelector(".js-record")?.addEventListener("click", () => recordInteraction(recommendation.name, "liked"));
+  els.detailPanel.querySelector(".js-open-recipes")?.addEventListener("click", () => setScreen("recipes"));
+
+  if (nextScreen) setScreen("recipes");
 }
 
 function renderRecommendations() {
   els.recommendations.innerHTML = "";
   if (!state.recommendations.length) {
     els.recommendations.innerHTML = `<p class="muted">No encontramos recomendaciones para este contexto.</p>`;
+    renderRecipePreview(null);
     return;
   }
 
   for (const recommendation of state.recommendations) {
     const node = els.cardTemplate.content.firstElementChild.cloneNode(true);
-    node.querySelector(".mode").textContent = recommendation.mode === "cook" ? "Cocinar" : "Delivery";
+    node.querySelector(".mode").textContent = modeLabel(recommendation.mode);
     node.querySelector(".mode").classList.add(recommendation.mode);
-    node.querySelector(".score").textContent = `Score ${recommendation.score}`;
+    node.querySelector(".score-pill").textContent = `Score ${recommendation.score}`;
     node.querySelector(".title").textContent = recommendation.name;
     node.querySelector(".description").textContent = recommendation.description;
     node.querySelector(
       ".meta",
-    ).textContent = `${recommendation.cuisine} · ${recommendation.cook_time} min · presupuesto ${currencyLevel(recommendation.price_level)}`;
+    ).textContent = `${recommendation.cuisine} · ${recommendation.cook_time} min · ${currencyLevel(recommendation.price_level)}`;
     node.querySelector(".reasons").innerHTML = recommendation.reasons.map((item) => `<li>${item}</li>`).join("");
     node.querySelector(".view-detail").addEventListener("click", () => selectRecommendation(recommendation.name));
     node.querySelector(".quick-like").addEventListener("click", () => recordInteraction(recommendation.name, "liked"));
@@ -175,14 +206,14 @@ async function recordInteraction(dishName, action) {
     });
     state.history = response.history;
     renderHistory();
-    els.statusText.textContent = `Registrado: ${action} en ${dishName}`;
+    els.statusText.textContent = `Guardado: ${action}`;
   } catch (error) {
     els.statusText.textContent = error.message;
   }
 }
 
 async function refreshRecommendations(payload) {
-  els.statusText.textContent = "Pensando recomendaciones...";
+  els.statusText.textContent = "Pensando menú...";
   try {
     const response = await api("/api/recommendations", {
       method: "POST",
@@ -191,8 +222,9 @@ async function refreshRecommendations(payload) {
     state.recommendations = response.recommendations;
     state.currentMood = payload.mood;
     renderAI(response.ai);
+    els.heroTitle.textContent = `Sugerencias para un día ${payload.mood}`;
     renderRecommendations();
-    els.statusText.textContent = "Recomendaciones actualizadas.";
+    els.statusText.textContent = "Sugerencias listas";
   } catch (error) {
     els.statusText.textContent = error.message;
   }
@@ -200,7 +232,6 @@ async function refreshRecommendations(payload) {
 
 els.profileForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-
   const payload = {
     name: els.profileForm.name.value,
     goal: els.profileForm.goal.value,
@@ -221,7 +252,8 @@ els.profileForm.addEventListener("submit", async (event) => {
       body: JSON.stringify(payload),
     });
     fillProfile(response.profile);
-    els.statusText.textContent = "Perfil guardado.";
+    els.statusText.textContent = "Perfil actualizado";
+    setScreen("today");
     await refreshRecommendations({
       mode: els.contextForm.mode.value,
       mood: els.contextForm.mood.value,
@@ -245,6 +277,14 @@ els.contextForm.addEventListener("submit", async (event) => {
   });
 });
 
+els.navItems.forEach((item) => item.addEventListener("click", () => setScreen(item.dataset.target)));
+els.goProfile?.addEventListener("click", () => setScreen("profile"));
+els.goRecipes?.addEventListener("click", () => {
+  if (state.selected) selectRecommendation(state.selected.name, true);
+  else setScreen("recipes");
+});
+els.goToday?.addEventListener("click", () => setScreen("today"));
+
 async function bootstrap() {
   try {
     const payload = await api("/api/bootstrap");
@@ -254,7 +294,7 @@ async function bootstrap() {
     renderHistory();
     renderAI(payload.ai);
     renderRecommendations();
-    els.statusText.textContent = "Listo para decidir tu próxima comida.";
+    els.statusText.textContent = "Listo para decidir";
   } catch (error) {
     els.statusText.textContent = error.message;
   }

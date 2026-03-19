@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 
 import app
 
@@ -33,6 +34,11 @@ class RecommendationTests(unittest.TestCase):
         self.assertIn("recommendations", payload)
         self.assertIn("ai", payload)
         self.assertGreaterEqual(len(payload["recommendations"]), 1)
+
+    def test_iphone_preview_exists(self):
+        preview = Path("static/iphone-preview.html").read_text(encoding="utf-8")
+        self.assertIn('iframe src="/"', preview)
+        self.assertIn("Simulador iPhone", preview)
 
 
 if __name__ == "__main__":

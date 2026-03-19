@@ -2,94 +2,65 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AppComida</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>AppComida · iPhone UI</title>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
-  <body>
-    <div class="shell">
-      <aside class="sidebar">
-        <div>
-          <p class="eyebrow">AppComida</p>
-          <h1>Decide qué comer sin pensarlo demasiado.</h1>
-          <p class="lede">
-            Recomendaciones personalizadas para cocinar o pedir delivery según gustos,
-            historial, tiempo y energía.
-          </p>
+  <body class="mobile-body">
+    <div class="app-shell">
+      <header class="status-bar">
+        <span>9:41</span>
+        <div class="status-icons">
+          <span>▴▴▴</span>
+          <span>◔</span>
+          <span>▉</span>
         </div>
+      </header>
 
-        <section class="panel compact">
-          <h2>Perfil alimenticio</h2>
-          <form id="profile-form" class="stack">
-            <label>
-              Nombre
-              <input type="text" name="name" placeholder="Tu nombre" />
-            </label>
-            <label>
-              Objetivo
-              <select name="goal">
-                <option value="variedad">Variedad</option>
-                <option value="ahorro">Ahorro</option>
-                <option value="saludable">Saludable</option>
-                <option value="alto-proteína">Alto en proteína</option>
-              </select>
-            </label>
-            <label>
-              Cocinas favoritas
-              <input type="text" name="favorite_cuisines" placeholder="Asiática, Mexicana..." />
-            </label>
-            <label>
-              Ingredientes favoritos
-              <input type="text" name="favorite_ingredients" placeholder="pollo, arroz..." />
-            </label>
-            <label>
-              Alergias / restricciones
-              <input type="text" name="allergies" placeholder="cacahuate, gluten..." />
-            </label>
-            <label>
-              Ingredientes que no te gustan
-              <input type="text" name="disliked_ingredients" placeholder="apio, coliflor..." />
-            </label>
-            <div class="two-cols">
-              <label>
-                Tiempo entre semana
-                <input type="number" min="5" max="120" name="weeknight_minutes" />
-              </label>
-              <label>
-                Presupuesto
-                <select name="budget_level">
-                  <option value="1">Bajo</option>
-                  <option value="2">Medio</option>
-                  <option value="3">Alto</option>
-                </select>
-              </label>
+      <main class="iphone-app">
+        <section class="screen active" data-screen="today">
+          <header class="top-header">
+            <div>
+              <p class="eyebrow">AppComida</p>
+              <h1>¿Qué vas a comer hoy?</h1>
             </div>
-            <fieldset>
-              <legend>Prefieres</legend>
-              <label><input type="checkbox" name="preferred_modes" value="cook" /> Cocinar</label>
-              <label><input type="checkbox" name="preferred_modes" value="delivery" /> Delivery</label>
-            </fieldset>
-            <button type="submit">Guardar perfil</button>
-          </form>
-        </section>
-      </aside>
+            <button class="icon-button" id="go-profile" type="button">☻</button>
+          </header>
 
-      <main class="content stack-lg">
-        <section class="hero-grid">
-          <div class="panel">
-            <p class="eyebrow">Tu contexto de hoy</p>
-            <form id="context-form" class="stack">
-              <div class="three-cols">
+          <section class="hero-card gradient-card">
+            <div>
+              <p class="eyebrow">Tu copiloto</p>
+              <h2 id="hero-title">Recomendaciones con IA para hoy</h2>
+              <p id="ai-summary">Cargando recomendaciones inteligentes…</p>
+            </div>
+            <div class="chips-row">
+              <span class="chip">Sin pensar demasiado</span>
+              <span class="chip">Variedad</span>
+              <span class="chip">Rápido</span>
+            </div>
+          </section>
+
+          <section class="card stack-sm">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Contexto rápido</p>
+                <h2>Tu momento de hoy</h2>
+              </div>
+              <span class="mini-status" id="status-text">Listando...</span>
+            </div>
+
+            <form id="context-form" class="stack-sm">
+              <div class="pill-grid">
                 <label>
-                  ¿Qué quieres hacer?
+                  <span>Modo</span>
                   <select name="mode">
                     <option value="both">Ambos</option>
                     <option value="cook">Cocinar</option>
-                    <option value="delivery">Pedir delivery</option>
+                    <option value="delivery">Delivery</option>
                   </select>
                 </label>
                 <label>
-                  ¿Cómo te sientes?
+                  <span>Estado</span>
                   <select name="mood">
                     <option value="ocupado">Ocupado</option>
                     <option value="cansado">Cansado</option>
@@ -98,85 +69,197 @@
                     <option value="quiero cocinar">Quiero cocinar</option>
                   </select>
                 </label>
+              </div>
+
+              <div class="pill-grid">
                 <label>
-                  Minutos disponibles
+                  <span>Minutos</span>
                   <input type="number" min="5" max="120" name="time_available" value="25" />
                 </label>
-              </div>
-              <div class="three-cols">
                 <label>
-                  Supermercado
+                  <span>Súper cerca</span>
                   <input type="text" name="supermarket" value="Mercado Local" />
                 </label>
-                <label class="toggle">
-                  <span>Evitar repetición</span>
-                  <input type="checkbox" name="wants_variety" checked />
-                </label>
-                <div class="actions-inline">
-                  <button type="submit">Actualizar recomendaciones</button>
-                </div>
               </div>
+
+              <label class="toggle-card">
+                <div>
+                  <strong>Evitar repetición</strong>
+                  <small>La app cambia proteína, cocina y estilo para no aburrirte.</small>
+                </div>
+                <input type="checkbox" name="wants_variety" checked />
+              </label>
+
+              <button type="submit">Actualizar sugerencias</button>
             </form>
-          </div>
+          </section>
 
-          <div class="panel accent stack">
-            <p class="eyebrow">AI de AppComida</p>
-            <h2>Ayuda de ChatGPT</h2>
-            <p id="ai-summary">Cargando recomendaciones inteligentes…</p>
-            <div class="tip-grid">
-              <article>
-                <h3>Tip receta</h3>
-                <p id="ai-recipe-tip">-</p>
-              </article>
-              <article>
-                <h3>Tip compra</h3>
-                <p id="ai-shopping-tip">-</p>
-              </article>
+          <section class="stack-sm">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Para ti</p>
+                <h2>Top recomendaciones</h2>
+              </div>
+              <button class="text-button" id="go-recipes" type="button">Ver receta</button>
             </div>
-            <small>
-              Conecta tu clave en <code>OPENAI_API_KEY</code> para personalización con ChatGPT.
-            </small>
-          </div>
-        </section>
+            <div id="recommendations" class="recommendation-list"></div>
+          </section>
 
-        <section class="stack">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Recomendaciones</p>
-              <h2>Qué comer hoy</h2>
-            </div>
-            <p id="status-text">Cargando…</p>
-          </div>
-          <div id="recommendations" class="cards"></div>
-        </section>
-
-        <section class="detail-grid">
-          <article class="panel stack" id="detail-panel">
+          <section class="card detail-card stack-sm" id="detail-panel">
             <p class="eyebrow">Detalle</p>
             <h2>Selecciona una recomendación</h2>
-            <p class="muted">Aquí verás pasos, ingredientes, motivos y acciones rápidas.</p>
-          </article>
+            <p class="muted">Verás motivos, pasos, compra y acciones rápidas aquí.</p>
+          </section>
+        </section>
 
-          <article class="panel stack">
-            <div class="section-heading small-gap">
+        <section class="screen" data-screen="recipes">
+          <header class="top-header compact-header">
+            <div>
+              <p class="eyebrow">Modo cocina</p>
+              <h1>Receta y compra</h1>
+            </div>
+            <button class="icon-button" id="go-today" type="button">⌂</button>
+          </header>
+
+          <section class="hero-card soft-card">
+            <div>
+              <p class="eyebrow">Tip ChatGPT</p>
+              <h2 id="recipe-hero-title">Cocina sin fricción</h2>
+              <p id="ai-recipe-tip">-</p>
+            </div>
+          </section>
+
+          <section class="card stack-sm">
+            <div class="section-header">
               <div>
-                <p class="eyebrow">Memoria</p>
-                <h2>Historial reciente</h2>
+                <p class="eyebrow">Compra inteligente</p>
+                <h2>Tu lista exacta</h2>
+              </div>
+            </div>
+            <p id="ai-shopping-tip" class="muted">-</p>
+            <ul id="shopping-preview" class="detail-list"></ul>
+          </section>
+
+          <section class="card stack-sm">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Paso a paso</p>
+                <h2 id="recipe-title">Elige una receta</h2>
+              </div>
+            </div>
+            <ol id="recipe-steps" class="detail-list"></ol>
+          </section>
+        </section>
+
+        <section class="screen" data-screen="profile">
+          <header class="top-header compact-header">
+            <div>
+              <p class="eyebrow">Tu perfil</p>
+              <h1>Preferencias</h1>
+            </div>
+            <a class="text-button link-button" href="/simulator">Simulador iPhone</a>
+          </header>
+
+          <section class="card stack-sm">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Conócete mejor</p>
+                <h2>Perfil alimenticio</h2>
+              </div>
+            </div>
+
+            <form id="profile-form" class="stack-sm">
+              <label>
+                <span>Nombre</span>
+                <input type="text" name="name" placeholder="Tu nombre" />
+              </label>
+              <label>
+                <span>Objetivo</span>
+                <select name="goal">
+                  <option value="variedad">Variedad</option>
+                  <option value="ahorro">Ahorro</option>
+                  <option value="saludable">Saludable</option>
+                  <option value="alto-proteína">Alto en proteína</option>
+                </select>
+              </label>
+              <label>
+                <span>Cocinas favoritas</span>
+                <input type="text" name="favorite_cuisines" placeholder="Asiática, Mexicana..." />
+              </label>
+              <label>
+                <span>Ingredientes favoritos</span>
+                <input type="text" name="favorite_ingredients" placeholder="pollo, arroz..." />
+              </label>
+              <label>
+                <span>Alergias / restricciones</span>
+                <input type="text" name="allergies" placeholder="cacahuate, gluten..." />
+              </label>
+              <label>
+                <span>Ingredientes que no te gustan</span>
+                <input type="text" name="disliked_ingredients" placeholder="apio, coliflor..." />
+              </label>
+              <div class="pill-grid">
+                <label>
+                  <span>Tiempo diario</span>
+                  <input type="number" min="5" max="120" name="weeknight_minutes" />
+                </label>
+                <label>
+                  <span>Presupuesto</span>
+                  <select name="budget_level">
+                    <option value="1">Bajo</option>
+                    <option value="2">Medio</option>
+                    <option value="3">Alto</option>
+                  </select>
+                </label>
+              </div>
+
+              <fieldset class="mode-select">
+                <legend>¿Qué prefieres?</legend>
+                <label><input type="checkbox" name="preferred_modes" value="cook" /> Cocinar</label>
+                <label><input type="checkbox" name="preferred_modes" value="delivery" /> Delivery</label>
+              </fieldset>
+
+              <button type="submit">Guardar perfil</button>
+            </form>
+          </section>
+
+          <section class="card stack-sm">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Aprendizaje</p>
+                <h2>Memoria reciente</h2>
               </div>
             </div>
             <ul id="history-list" class="history-list"></ul>
-          </article>
+          </section>
         </section>
       </main>
+
+      <nav class="bottom-nav">
+        <button class="nav-item active" data-target="today" type="button">
+          <span>⌂</span>
+          <strong>Hoy</strong>
+        </button>
+        <button class="nav-item" data-target="recipes" type="button">
+          <span>🍳</span>
+          <strong>Recetas</strong>
+        </button>
+        <button class="nav-item" data-target="profile" type="button">
+          <span>☻</span>
+          <strong>Perfil</strong>
+        </button>
+      </nav>
     </div>
 
     <template id="card-template">
-      <article class="panel recommendation-card">
-        <div class="card-topline">
-          <span class="badge mode"></span>
-          <span class="score"></span>
+      <article class="recommendation-card card">
+        <div class="section-header start">
+          <div>
+            <span class="badge mode"></span>
+            <h3 class="title"></h3>
+          </div>
+          <span class="score-pill"></span>
         </div>
-        <h3 class="title"></h3>
         <p class="description"></p>
         <div class="meta"></div>
         <ul class="reasons"></ul>

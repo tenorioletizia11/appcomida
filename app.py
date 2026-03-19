@@ -701,12 +701,23 @@ class AppComidaHandler(BaseHTTPRequestHandler):
             self.wfile.write(index)
             return
 
+        if self.path == "/simulator":
+            preview = (STATIC_DIR / "iphone-preview.html").read_bytes()
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(preview)))
+            self.end_headers()
+            self.wfile.write(preview)
+            return
+
         if self.path.startswith("/static/"):
             file_path = BASE_DIR / self.path.lstrip("/")
             if not file_path.exists():
                 self.send_error(HTTPStatus.NOT_FOUND)
                 return
             mime = "text/plain; charset=utf-8"
+            if file_path.suffix == ".html":
+                mime = "text/html; charset=utf-8"
             if file_path.suffix == ".css":
                 mime = "text/css; charset=utf-8"
             elif file_path.suffix == ".js":
